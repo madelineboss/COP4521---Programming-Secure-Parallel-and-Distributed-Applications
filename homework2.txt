@@ -1,0 +1,114 @@
+COP4521 Homework 2
+
+Name: Madeline Boss            FSU login: mab22bb
+
+
+1) (10 points). Let variable rate = 0.122. Write a print statement that prints
+the rate in both the raw value and the (round down) integer
+percentage format as the following using f-string:
+
+rate = 0.122 (12%)
+
+print(f'{rate}')
+print(f'{rate * 100 :.0f}%')
+
+
+2) (10 points). What is the output of the following code segment:
+
+a = [i * 2 for i in range(10)]
+print(a[:-2:3])
+
+
+[0, 6, 12]
+
+Explanation:
+The syntax a[:-2:3] comes from this syntax for list slicing, list[start:end:step]. The provided code does not have any input for the start
+so it is defaulted to zero. The -2 means that the output will end at the second to last element. The 3 means that we increment by 3 indeces
+through the list. Before the splicing even happens, each element in the list is multiplied by two, so the whole list in the range of 10
+would be [0, 2, 4, 6, 8, 10, 12, 14, 16, 18]. Then, we start with 0, increment 3 would bring us to 6, then to 12. We do not go any further
+because we stop at the second to last index. If we went further we would be violating the stop point. This gives a final answer of [0, 6, 12].
+
+
+
+3) (10 points). Write a function that takes two arguments, a dictionary
+dict and a keyword key, and returns True if key is in dict
+and False otherwise.
+
+omg = {'Age': 19, 'Name': "Susan"}
+key = 'Age'
+ki = 'A'
+
+
+def prob3(dict, key):
+    found = (dict.__contains__(key))
+    return found
+
+
+print(prob3(omg, key))
+print(prob3(omg, ki))
+
+
+
+4) (20 points). Write a lambda function that has the same functionality as
+the following function.
+
+import math
+def isPowerOfTwo(x):
+    if 2**int(math.log2(x)) == x:
+        return True
+    else :
+        return False
+
+
+Answer:
+power = lambda x:  2**int(math.log2(x)) == x   
+print(power(4))
+print(power(5))
+
+
+
+5) (20 points). Complete the body of the function to count the number
+of power of 2 numbers in a list using functional programming tools.
+The body should only contain one return statement.
+
+import math
+
+def countPowerOfTwo(lst):
+    count = 0
+    for num in lst:
+        if num > 0 and 2**int(math.log2(num)) == num:
+            count += 1
+    return count
+
+lst = [0, 1, 2, 3, 4]
+print(countPowerOfTwo(lst))
+
+
+
+
+
+
+6) (20 points). Write a class foo with three instance variables var1, var2,
+and var3. var1 should be initialized to 10 and var2 to 20 when an object
+of the class is created. var3 is initialized (to 30) when method aaa in the
+class is invoked. 
+
+
+class Foo:
+    def __init__(self):
+        self.var1 = 10
+        self.var2 = 20
+    def aaa(self):
+        self.var3 = 30
+
+
+
+7) (10 points). Write a class boo that is a derived class of foo in problem 6)
+with an additional instance variable var that should be initialized to 100
+when an object of class boo is created. 
+
+
+class Boo(Foo):  
+    def __init__(self):
+        super().__init__()  
+        self.var = 100 
