@@ -72,16 +72,11 @@ of power of 2 numbers in a list using functional programming tools.
 The body should only contain one return statement.
 
 import math
-
 def countPowerOfTwo(lst):
-    count = 0
-    for num in lst:
-        if num > 0 and 2**int(math.log2(num)) == num:
-            count += 1
-    return count
-
-lst = [0, 1, 2, 3, 4]
-print(countPowerOfTwo(lst))
+    return sum(
+        1 for num in lst 
+        if num > 0 and 2**int(math.log2(num)) == num
+    )
 
 
 
