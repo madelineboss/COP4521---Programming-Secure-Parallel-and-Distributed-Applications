@@ -26,5 +26,8 @@ def main():
     print("Start Date: ", start_date)
     print("End Date: ", end_date)
 
+    apache_file = open(logFilePath, 'r')
+    print(f"Filename: {apache_file.name}")
+
 if __name__ == "__main__":
     main()
