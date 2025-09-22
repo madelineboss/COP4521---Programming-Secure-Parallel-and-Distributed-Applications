@@ -13,21 +13,30 @@ import sys
 
 def main():
     #defualt inputs
-    start_date = "01/01/0000"
+    start_date = "01/01/0000"   
     end_date = "12/30/9999"
+    #filepath should always be the second argument
     logFilePath = sys.argv[1]
 
     if len(sys.argv) >= 3:
+        #if there is a third argument, that is the start date
         start_date = sys.argv[2]
     if len(sys.argv) >= 4:
+        #if there is a foruth argument, that is the end date
         end_date = sys.argv[3]
 
+    #personal check to see that it is grabbing the right arguments
     print("Log File Path: ",logFilePath)
     print("Start Date: ", start_date)
     print("End Date: ", end_date)
 
+    #opening file
     apache_file = open(logFilePath, 'r')
-    print(f"Filename: {apache_file.name}")
+
+    #checking that the file is open
+    if apache_file.closed == False:
+        pass
+    
 
 if __name__ == "__main__":
     main()
