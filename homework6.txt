@@ -65,10 +65,45 @@ Sells table:
 		   001    200    50,000
 		   002    200    20,000
 
+import sys
+import sqlite3 
+
+table1 = 'Employee'
+table2 = 'Product'
+table3 = 'Sells'
+if(len(sys.argv) == 2):
+    table = sys.argv[1]
+conn = sqlite3.connect('./sql_db/Demo_table.db')
+cur = conn.cursor()
+
+t1 = cur.execute('SELECT * from' + table1)
+for row in t1:
+    print(row)
+
+t2 = cur.execute('SELECT * from' + table2)
+for row in t2:
+    print(row)
+
+t3 = cur.execute('SELECT * from' + table3)
+for row in t3:
+    print(row)
+
 
 3. (20 points) Write Python SQLite3 code to query the database in Question
 1 to find the names of all products sold by John Smith. The code must also
 display the result of the query. 
+
+import sqlite3
+
+name = 'John Smith'
+table = 'Product'
+
+conn = sqlite3.connect('./sql_db/Demo_table.db')
+cur = conn.cursor() 
+
+for row in cur.execute('SELECT name FROM table;' ):
+    print(row)
+
 
 4. (20 points) Write the Python Flask code for the static web page
 http://127.0.0.1:50001/ and dynamic web-pages
