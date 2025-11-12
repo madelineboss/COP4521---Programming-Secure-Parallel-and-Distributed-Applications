@@ -1,0 +1,87 @@
+COP4521 Homework 6
+
+Name: Madeline Boss          FSU login: mab22bb
+
+1. (20 points) Write Python SQLite3 code to create three tables: Employee
+(Eid, Name) where Eid is the key, product (Pid, Name, Manf) where Pid is
+the key, and sells (Eid, Pid, price). You can assume any appropriate data types
+for the attributes. 
+
+import sqlite3 
+#do some stuff to connect to a database
+conn = sqlite3.connect('./sql_db/Demo_table.db)
+cur = conn.cursor()
+
+#creating table1
+cur.execute("Create table Employee(
+    Eid INTEGER PRIMARY KEY NOT NULL, 
+    Name TEXT NOT NULL
+    );
+")
+
+#saving changes
+conn.commit()
+
+#creating table2
+cur.execute("Create table Product(
+    Pid INTEGER PRIMARY KEY NOT NULL,
+    Name TEXT NOT NULL, 
+    Manf TEXT NOT NULL
+    );
+")
+
+#saving changes
+conn.commit()
+
+#creating table 3
+cur.execute("Create table Sells(
+    Eid INTEGER NOT NULL, 
+    Pid INTEGER NOT NULL, 
+    price INTEGER NOT NULL
+    );
+")
+
+#saving changes
+conn.commit()
+
+2. (20 points) Write Python3 SQLite3 code to popular the tables in Question 1
+as the follows:
+
+Employee table:
+--------------
+                   Eid    Name
+		   001    John Smith
+                   002    (none)
+
+Product table:
+--------------
+                   Pid    Name     Manf
+		   100    AC       (none)
+		   200    Model3   Telsa
+
+Sells table:
+-----------
+                   Eid    Pid    Price
+		   001    200    50,000
+		   002    200    20,000
+
+
+3. (20 points) Write Python SQLite3 code to query the database in Question
+1 to find the names of all products sold by John Smith. The code must also
+display the result of the query. 
+
+4. (20 points) Write the Python Flask code for the static web page
+http://127.0.0.1:50001/ and dynamic web-pages
+http://127.0.0.1:50001/user/{username} where username can be any string. The
+http://127.0.0.1:50001/ page displays "Welcome" while
+http://127.0.0.1:50001/user/{username} displays f"Hello {username}!".
+
+
+5. (20 points) Let tableVar be a variable in python. For example,
+
+        tableVar = [[1, 2, 3], ["one", "two", "three"]]
+
+Write the python Flask code (the combine of Python code and html template)
+to display the content of tableVar in an html table format in page
+http://127.0.0.1:50001/content.
+
