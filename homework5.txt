@@ -9,7 +9,7 @@ employee ID (Eid) and name (Name). A product has two attributes,
 product ID (Pid) and maker (Maker). Draw the ER diagram to model the data
 for this task.
 
-
+Image of answer has been included in separate file of submission. 
 
 2) (20 points) Convert the ER diagram in question 1) to equivalent
 relations.
