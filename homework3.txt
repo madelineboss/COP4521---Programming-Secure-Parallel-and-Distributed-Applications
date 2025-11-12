@@ -1,0 +1,176 @@
+COP4521 Homework 3
+
+Name: Madeline Boss          FSU login: mab22bb
+
+
+1) (10 points) (True or False) By utilizing multiple processors, parallel
+computing can make any sequential program run faster.
+
+False. Some sequential programs cannot be parallelized due to dependencies. 
+
+
+
+
+
+2) (10 points) Explain Flynn's classification of computing systems.
+
+Flynn's classification of computing systems contains four main classifications:
+1. SISD - Single instruction, single data stream.
+    This means that one at a time, one instruction operates on one data. 
+    There is only one processing unit. This is a sequential architecture.
+
+2. SIMD - Single instruction, multiple data 
+    This means that at one time, one instruction operates on multiple different data.
+    This is done through one instruction being sent to multiple processing units.
+    This is a parallel architecture.
+
+3. MISD - Multiple instructions, single data
+    This means that multiple instructions operate on one data at the same time through
+    multiple processors. This is a parallel architecture.
+
+4. MIMD - Multiple instructions, multiple data
+    This means that there are multiple instructions operating on multiple different
+    data through the use of multiple processing units. It can be thought of as multiple
+    uses of SISD. This is a parallel architecture and the most generic form of 
+    parallel programming.
+
+
+
+
+3) (20 points) Explain the relationship among multithreading, multiprocessing,
+concurrent programming, and parallel programming.
+
+Multithreading is a mechanism where there are multiple threads created and used in a process to complete a task.
+Multiprocessing is a mechanism where multiple processes are being run to complete a task. The major difference between
+multithreading and multiprocessing is that the threads in multithreading share memory and communication is easy, while 
+the processes in multiprocessing do not share memory and communication is expensive. Since threads occur inside of a process,
+multithreading can happen inside of multiprocessing, meaning multiple threads can be running at the same time inside of multiple
+processes running at the same time. The relationship these two mechanisms have with concurrent programming and parallel programming
+is that they are used to achieve these programming structures. Concurrent programming is when a program is trying to manage multiple
+tasks at the same time, though they may not execute at the exact same time. Multithreading and multiprocessing can be used to achieve 
+this structure. Parallel programming is a structure where multiple instructions are happening at the exact same time to complete
+a task. This can also be done with multithreading and multiprocessing. The major difference between concurrent programming and 
+parallel programming, is that concurrent only requires one CPU, while parallel programming requires more than one.
+
+
+
+
+
+
+
+
+4) (20 points) Let a program have 20% sequential component and 80% that can
+be parallelized. Given the strong scaling and weak scaling
+speedups that can be achieved using 2, 4, 8, 16 processors.
+
+Strong Scaling:
+2: 1.667
+4: 2.5
+8: 3.333
+16: 4
+
+Weak Scaling:
+2: 1.8
+4: 3.4
+8: 6.6
+16: 13
+
+
+
+
+5) (20 points) Write a multiprocessing Python program that does the
+following. The main process
+initializes a message queue, starts a child process, sends a string 'start' to
+the message queue, and waits for the child process to finish before it ends.
+The child process reads from message queue, prints the message and exits. 
+
+from time import sleep
+import multiprocessing
+
+def job(mq):
+    msg = mq.get()
+
+    #child process is reading from the message queue
+    print(f"Child process reading the message queue: {msg}")
+
+#initializing message queue
+mq = multiprocessing.Queue()
+
+#creating and starting child process
+cp = multiprocessing.Process(target=job, args=(mq,))
+cp.start()
+
+#sending start to the message queue
+mq.put("start")
+#tells the program the wait for the child process to finish before it ends
+cp.join()
+
+
+
+
+
+6) (20 points) Parallelize the following loops using OpenMP
+
+
+
+for (i=0; i<10000; i++)
+    a[i] = a[i+1] + 1.0;
+
+parallel verison:
+
+double b[10001]; // temp array
+#pragma omp parallel for
+for (int i = 0; i < 10000; i++)
+    b[i] = a[i+1] + 1.0;
+
+// Copy back if needed
+#pragma omp parallel for
+for (int i = 0; i < 10000; i++)
+    a[i] = b[i];
+
+---------------------------------
+for (i=0; i<10000; i++) {
+    x = 2.0;
+    a[i] = b[i] + c[i] + x;
+}
+
+parallel verison:
+
+#pragma omp parallel for
+for (i=0; i<10000; i++) {
+    x = 2.0;
+    a[i] = b[i] + c[i] + x;
+}
+
+---------------------------------------
+
+for (i=0; i<10000; i++) {
+    y = a[i] + 2;
+    x = x + y
+}
+
+parallel version:
+#pragma omp parallel for reduction(+: x)
+for (i=0; i<10000; i++) {
+    x += a[i] + 2;
+}
+
+----------------------------------------
+
+for(i=0; i<10000; i++) {
+    for (j=0; j<10000; j++) {                                                       
+        x = 2*i+1;                                                                  
+        a = a + b[i]+x;                                                             
+  }                                                                             
+}  
+
+parallel verison:
+
+#pragma omp parallel for reduction(+: a)
+for(i=0; i<10000; i++) {
+    for (j=0; j<10000; j++) {                                                       
+        x = 2*i+1;                                                                  
+        a = a + b[i]+x;                                                             
+  }                                                                             
+} 
+      

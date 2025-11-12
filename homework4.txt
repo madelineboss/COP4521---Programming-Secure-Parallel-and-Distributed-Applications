@@ -1,0 +1,109 @@
+COP4521 Homework 4
+
+Name:Madeline Boss              FSU login:mab22bb
+
+
+1) (10 points) Explain network protocol and service interface.
+
+Network protocol and service interface are defined by the layered architecture used to simplify comlex networking.
+Every layer, n, in a network provides a service. Each layer is dependent on the service from the layer before it, meaning that
+n is reliant on n-1, and n+1 is reliant on n. They communicate to each other through the service interface. Entities on the 
+same machine between two layers that are next to each other can only communicate through this inteface. Entities in a network 
+that are in the same layer, but on different hosts can interact with eacother through a network protocol. This protocol determines 
+how communication is handled between entites in the same layer from different hosts. 
+
+
+2) (20 points) List four types of network services. Give all possible
+types of services that can result in the following scenario: the
+sender sends 1, 2, 3, 4, 5 and the receiver receives 1, 2, 3. 
+
+Types of services:
+- reliable connection-oriented
+- reliable connectionless
+- unreliable connection-oriented
+- unreliable connectionless
+
+Service example:
+- unreliable connectino-oriented
+- unreliable connectionless
+
+
+3) (10 points) List the seven layers in the ISO/OSI reference model, and
+briefly describe the main functionality in each layer.
+
+1. Physical layer - responsible for transferring bits over a physical connection
+2. Data link layer - responsible for transferring frames between directly connected entities
+3. Network layer - responsible for determining how to send a packet that may not be directly connected, also known as routing
+4. Transport layer - responsible for determining how to achieve end to end communication
+5. Session layer - responsible for allowing users to create sessions
+6. Presentation layer - responsible for providing general solutions to users
+7. Application layer - responsible for a variety of common protocols
+
+
+
+4) (10 points) List the four layers in the TCP/IP reference model, and
+briefly describe the main functionality in each layer.
+
+1. Application layer - responsible for connecting users to network services
+2. Transport layer - responsible for end to end communication
+3. Internet layer - responsible for routing packets to their destination even if they are not directly connected
+4. Host to network layer - responsible for communication between directly connected devices
+
+
+
+5) (20 points)  A computer is connected to a network using a 100Mbps
+Ethernet link. An Ethernet frame includes all headers. The header sizes are:
+
+  - Ethernet header: 14 bytes
+  - IP header: 20 bytes
+  - TCP header: 20 bytes
+
+Assuming the computer continuously sends 500-bytes frames, and there are
+no retransmissions or losses, what is the maximum end-to-end throughput
+(in Mbps) that the computer can achieve at the application layer?
+
+89.2 mbps
+
+
+
+6) (10 points) Ashley was excited to get the 1Gbps Internet service.
+She performed an Internet speed test for the downlink on her PS5,
+which indicated that for the speed test, 500MB data was sent. When the
+test was done, it was reported that the downlink speed was 200Mbps.
+How much time did it take to perform the speed test?
+
+20 seconds
+
+
+
+7) (10 points) Michael just upgraded to a new Internet Service Provider that
+provides 100Gbps bandwidth from his old 10Gbps Internet access. Based only on
+this information, will ALL network applications run better with this new
+Internet Service Provider? Briefly justify your answer. 
+
+No, just because he upgraded his bandwidth does not mean that all network applications will run better. There 
+are other issues that might occur to slow down performance such as latency, server speed, and other bottlenecks.
+
+
+
+8) (10 points) Describe the control flow of major socket function calls
+in a sequential server program and in a network client program.
+
+Sequential Server:
+The control flow is as follows in a sequential server program. It starts by creating a new socket, then binds the socket
+to a specific IP address on the server. Then the socket is entered into listening mode so it can accept client connections. 
+From there, the socket waits until is receives a connection. Once the conneciton is established, the accept function returns a new 
+socket for the specific client. Then data can be recieved from the client, and data can be sent to the client. There is an optional
+loop of data back and forth between the socket and the client. Finally, when the communication is finished, the client socket is closed.
+The main point of the sequential server is that it handles one client at a time. 
+
+Network Client:
+In a network client program, the control flow of a socket function call starts with the creation of a new socket which then requests
+a connection to the server's IP address. Once connected, the socket can send and recieve data to and from the server. There is an optional
+read/write loop. When communication is done, the socket is closed. The main distinction between the network client program and the 
+sequential server program is that the network client program initiates communication with a server and actively connects, while the 
+sequential program is passive in those aspects. Network client programs typically request data or services while the sequential server
+program provides that data or service. 
+
+
+

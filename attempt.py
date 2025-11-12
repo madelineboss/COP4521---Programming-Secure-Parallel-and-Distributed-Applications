@@ -1,0 +1,279 @@
+#!/usr/bin/env python3
+"""
+Name: Madeline Boss
+Date: 10/12/25
+Assignment: 3
+About this project: Parallel 2D Prisoner's Dilemma using multiprocessing with shared memory
+and domain decomposition.
+Includes a sequential runner for verification and automated comparison.
+"""
+
+import sys
+import random
+import time
+from multiprocessing import Process, Barrier, Value, Array
+
+# ---- Constants ----
+cooperate = 0
+defect = 1
+
+payoffMatrix = [
+    [3, 0],
+    [5, 1],
+]
+
+# ---- Helpers ----
+def makeShape(size, value):
+    return [[value for _ in range(size)] for _ in range(size)]
+
+# ---- Initialization functions (deterministic signatures: (grid,size)) ----
+def initializeActionGrid1(actionGrid, size):
+    for i in range(size):
+        for j in range(size):
+            if i < size // 2:
+                actionGrid[i][j] = cooperate
+            else:
+                actionGrid[i][j] = defect
+
+def initializeActionGrid2(actionGrid, size):
+    for i in range(size):
+        for j in range(size):
+            if i == j:
+                actionGrid[i][j] = defect
+            else:
+                actionGrid[i][j] = cooperate
+
+def initializeActionGrid3(actionGrid, size):
+    for i in range(size):
+        for j in range(size):
+            actionGrid[i][j] = cooperate
+    actionGrid[size // 2][size // 2] = defect
+
+def initializeActionGrid4(actionGrid, size):
+    for i in range(size):
+        for j in range(size):
+            actionGrid[i][j] = cooperate
+    if size > 1:
+        actionGrid[1][1] = defect
+    else:
+        actionGrid[0][0] = defect
+
+
+
+#Worker function that executes simulation steps concurrently using multiple processes and shared memory
+def worker(pid, num_procs, size, steps, initF_name, shm_action, shm_new_action, shm_reward, barrier, counts, seed):
+    #pid = process id
+    #shm = shared memory, shm_action = current actions, shm_new_action = temp new actions, shm_reward = calculated rewards
+    #barriers are used to syncronize the steps of all the processes
+    # seed per worker (only affects any randomness inside workers; not used here)
+    random.seed(seed + pid)
+    #translates 2d grid coordinates to an index in a 1d array
+    def idx(i, j): return i * size + j
+
+    #calculates the min # of rows that each process will be responsible for 
+    rows_per_proc = max(1, size // num_procs)  # ensure at least 1 row per process
+    #start determines the first row index/starting boundary
+    start = pid * rows_per_proc
+    #end determines the end boundary
+    #for any process that is not the last one, the domain ends right before the next process starts
+    #the final process takes responsibility for all remaining rows up to the total size of the grid
+    end = size if pid == num_procs - 1 else min(size, (pid + 1) * rows_per_proc)
+
+    for step in range(steps):
+        #compute rewards (read-only shm_action)
+        for i in range(start, end):
+            for j in range(size):
+                #getting the current action
+                act = shm_action[idx(i, j)]
+                #total variable for reward total
+                total = 0
+                #the cell has to interact with all four of its nbrs
+                #use the payoffMatrix to determine the reward
+
+                #north nbr check, ensuring the cell is not on the top boundary
+                if i > 0:
+                    total += payoffMatrix[act][shm_action[idx(i - 1, j)]]
+
+                #south nbr check, ensuring the cell is not on the bottom boundary
+                if i + 1 < size:
+                    total += payoffMatrix[act][shm_action[idx(i + 1, j)]]
+
+                #west nbr check, ensuring the cell is not on the left boundary
+                if j > 0:
+                    total += payoffMatrix[act][shm_action[idx(i, j - 1)]]
+
+                #east nbr check, ensuring the cell is not on the right boundary
+                if j + 1 < size:
+                    total += payoffMatrix[act][shm_action[idx(i, j + 1)]]
+                
+                #the shared memory reward is equal to the total that has been calculated
+                shm_reward[idx(i, j)] = total
+
+        #this barrier ensures that all processes have completed calculating rewards before the processes move on to the next step
+        barrier.wait()
+
+        
+        for i in range(start, end):
+            #decide which strategy yielded the best reward
+            for j in range(size):
+                bestReward = shm_reward[idx(i, j)]
+                bestAction = shm_action[idx(i, j)]
+
+                # checking the north nbr and checking if the reward calculated is larger than the best reward
+                # if true, then the cell updates best reward and sets the best action to the action of the north neighbor
+                if i > 0 and shm_reward[idx(i - 1, j)] > bestReward:
+                    bestReward = shm_reward[idx(i - 1, j)]
+                    bestAction = shm_action[idx(i - 1, j)]
+
+                # same logic for the north, but for the south
+                if i + 1 < size and shm_reward[idx(i + 1, j)] > bestReward:
+                    bestReward = shm_reward[idx(i + 1, j)]
+                    bestAction = shm_action[idx(i + 1, j)]
+
+                # same logic for the north, but for the east
+                if j + 1 < size and shm_reward[idx(i, j + 1)] > bestReward:
+                    bestReward = shm_reward[idx(i, j + 1)]
+                    bestAction = shm_action[idx(i, j + 1)]
+
+                # same logic for the north, but for the west
+                if j > 0 and shm_reward[idx(i, j - 1)] > bestReward:
+                    bestReward = shm_reward[idx(i, j - 1)]
+                    bestAction = shm_action[idx(i, j - 1)]
+
+                #after comparing all of the strategies, whichever one was the best is written into the temporary array
+                shm_new_action[idx(i, j)] = bestAction
+
+        #ensures all processes finished writing their shm_new_action 
+        barrier.wait()
+
+        #update shm_action with the info from shm_new_action, safe since all processes have finished
+        for i in range(start, end):
+            base = i * size
+            for j in range(size):
+                shm_action[base + j] = shm_new_action[base + j]
+
+        #ensure every process is done copying
+        barrier.wait()
+
+        #count local cooperators
+        localC = 0
+        for i in range(start, end):
+            for j in range(size):
+                if shm_action[idx(i, j)] == cooperate:
+                    localC += 1
+        #use lock since multiple processes are doing the same thing
+        #get lock retrieves the lock associated with its specific slot in the counts array
+        with counts[pid].get_lock():
+            counts[pid].value = localC
+
+        #ensures all counts are written
+        barrier.wait()
+
+# ---- Parallel driver (returns counts and final grid) ----
+def runParallel(initF, size=10, steps=10, nprocs=2, seed=42, fname='output_par.txt'):
+    # print header
+    print(f"{initF.__name__}, size={size}, steps={steps}, procs={nprocs}, fName={fname}")
+
+    #sets a random seed for the main process
+    random.seed(seed)
+    #calculates the total number of cells in the square grid
+    N = size * size
+
+    #create a shared memory array of integers i, with N elements, storing the current actions.
+    shm_action = Array('i', N, lock=False)
+    #create a shared memory array to be used as a temporary array to store strategies for the next step
+    shm_new_action = Array('i', N, lock=False)
+    #create a shared memory array to store the calculated rewards
+    shm_reward = Array('i', N, lock=False)
+    #lock=Flase in all of these is for barrier usage
+
+    # initialize local tmp grid and copy into shm_action & shm_new_action
+    tmp = makeShape(size, cooperate)
+    initF(tmp, size)
+    for i in range(size):
+        for j in range(size):
+            shm_action[i * size + j] = tmp[i][j]
+            shm_new_action[i * size + j] = tmp[i][j]
+
+    #creating a barrier, set barrier count to nprocs+1 bc main driver must participate in every barrier point
+    barrier = Barrier(nprocs + 1)
+    #creates an array of Value objects to be used by the worker function for counting local cooperators
+    counts = [Value('i', 0) for _ in range(nprocs)]
+
+    #create process list to hold worker process objects
+    procs = []
+    #creating a process for each pid
+    for pid in range(nprocs):
+        p = Process(target=worker, args=(pid, nprocs, size, steps, initF.__name__,
+                                         shm_action, shm_new_action, shm_reward, barrier, counts, seed))
+        #start the process
+        p.start()
+        #add to procs list
+        procs.append(p)
+
+    #used to hold the total coop count at the end of each simulation step
+    coop_counts = []
+    #timer for each sim loop
+    t0 = time.perf_counter()
+    #call on all four barriers used in worker func so that the main process waits for all workers to complete each phase
+    for step in range(steps):
+        barrier.wait()  
+        barrier.wait()  
+        barrier.wait()  
+        barrier.wait()  
+
+        #after all workers have written their counts, the main process sums the values stored in counts
+        totalC = sum(c.value for c in counts)
+        coop_counts.append(totalC)
+        #calc total num of defectors
+        totalD = size * size - totalC
+        print(f"step {step}: {totalC} cooperates, {totalD} defects")
+
+    #timer
+    t1 = time.perf_counter()
+
+    #waiting for every process p in the list to finish executing before outputing
+    for p in procs:
+        p.join()
+
+    # write final grid to file
+    final_grid = []
+    with open(fname, 'w') as f:
+        for i in range(size):
+            row = [shm_action[i * size + j] for j in range(size)]
+            final_grid.append(row)
+            f.write(f"{i}: {row}\n")
+
+    #print(f"Elapsed time: {t1 - t0:.4f}s")
+    return coop_counts, final_grid
+
+# ---- Entry point ----
+if __name__ == "__main__":
+    if len(sys.argv) < 4:
+        print("Usage: python3 boss_m_assignment3.py grid_size iterations num_processes")
+        sys.exit(1)
+
+    gridSize = int(sys.argv[1])
+    steps = int(sys.argv[2])
+    nprocs = int(sys.argv[3])
+    seed = 1234
+
+    init_functions = [
+        initializeActionGrid1,
+        initializeActionGrid2,
+        initializeActionGrid3,
+        initializeActionGrid4
+    ]
+
+    for i, initF in enumerate(init_functions):
+        random.seed(seed)
+        fname = f"output_grid{i + 1}_{gridSize}_{steps}_p{nprocs}.txt"
+        runParallel(initF=initF, size = gridSize, steps = steps, nprocs = nprocs, seed = seed, fname = fname)
+
+'''
+    for initF in init_functions:
+        # reset RNG so each init uses same randomness (if any)
+        random.seed(seed)
+        fname = f"output_grid{i + 1}_{gridSize}_{steps}_p{nprocs}.txt"
+        runParallel(initF, size=gridSize, steps=steps, nprocs=nprocs, seed=seed)
+'''
