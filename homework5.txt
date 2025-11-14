@@ -14,7 +14,7 @@ Image of answer has been included in separate file of submission.
 2) (20 points) Convert the ER diagram in question 1) to equivalent
 relations.
 
-Relation = (a1, b1, c1, ..., ck)
+Relation = (EID, Name, PID, Maker, Commission)
 
 
 Write SQL queries that achieve the following: 
@@ -53,9 +53,6 @@ SELECT students.SID, students.Fname, students.LName
 FROM  students, takes
 JOIN takes t1 ON students.SID = t1.SID AND t1.course = 'COP4521'
 JOIN takes t2 ON students.SID = t2.SID AND t2.course = 'COP4610';
-
-
-
 
 
 

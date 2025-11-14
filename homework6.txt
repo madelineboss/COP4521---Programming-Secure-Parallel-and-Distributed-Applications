@@ -111,6 +111,8 @@ http://127.0.0.1:50001/user/{username} where username can be any string. The
 http://127.0.0.1:50001/ page displays "Welcome" while
 http://127.0.0.1:50001/user/{username} displays f"Hello {username}!".
 
+from flask import Flask
+
 
 5. (20 points) Let tableVar be a variable in python. For example,
 
