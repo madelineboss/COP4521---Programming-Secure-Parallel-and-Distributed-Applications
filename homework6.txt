@@ -112,7 +112,18 @@ http://127.0.0.1:50001/ page displays "Welcome" while
 http://127.0.0.1:50001/user/{username} displays f"Hello {username}!".
 
 from flask import Flask
+app = Flask(__name__)
 
+@app.route('/')
+def welcome_nu():
+    return 'Welcome'
+
+@app.route('/user/<username>')
+def user(username):
+    return f'Hello {username}!'
+
+if __name__ == '__main__':
+    app.run(host='127.0.0.1', port = 50001)
 
 5. (20 points) Let tableVar be a variable in python. For example,
 
@@ -121,4 +132,48 @@ from flask import Flask
 Write the python Flask code (the combine of Python code and html template)
 to display the content of tableVar in an html table format in page
 http://127.0.0.1:50001/content.
+
+app.py:
+from flask import Flask, render_template
+
+app = Flask(__name__)
+
+# Example table
+tableVar = [[1, 2, 3], ["one", "two", "three"]]
+
+@app.route('/content')
+def content():
+    return render_template('table.html', table=tableVar)
+
+if __name__ == '__main__':
+    app.run(host = 127.0.0.1, port=50001)
+
+
+
+templates/table.html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Table Content</title>
+    <style>
+        table, th, td {
+            border: 1px solid black;
+            border-collapse: collapse;
+            padding: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Table Content</h2>
+    <table>
+        {% for row in table %}
+        <tr>
+            {% for item in row %}
+            <td>{{ item }}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
 
